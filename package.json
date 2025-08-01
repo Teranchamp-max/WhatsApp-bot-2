@@ -1,0 +1,14 @@
+{
+  "name": "bwmxmd-bot",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0",
+    "qrcode": "^1.5.1",
+    "ws": "^8.13.0",
+    "pino": "^8.17.0"
+  }
+}
