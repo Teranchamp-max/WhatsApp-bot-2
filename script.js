@@ -1,4 +1,4 @@
-const socket = new WebSocket("wss://" + window.location.host);
+const socket = new WebSocket("wss://whatsapp-bot-2-we2a.onrender.com");
 
 const codeEl = document.getElementById("code");
 const statusEl = document.getElementById("status");
