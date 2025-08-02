@@ -28,4 +28,8 @@ socket.onmessage = (event) => {
   if (data.status === "expired") {
     statusEl.innerText = "❌ Code Expired. Refresh to try again.";
   }
-};
+  const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
+
