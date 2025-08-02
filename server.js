@@ -1,16 +1,34 @@
+const express = require("express");
+const http = require("http");
 const WebSocket = require("ws");
+const path = require("path");
 const { startBotWithCode } = require("./whatsapp_bot");
 
-const wss = new WebSocket.Server({ port: process.env.PORT || 3000 });
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// Generate 8-digit session code
+function generateSessionCode() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// Handle WebSocket connection
 wss.on("connection", function connection(ws) {
   const sessionCode = generateSessionCode();
-  console.log(`🆕 New user connected: ${sessionCode}`);
+  console.log(`🆕 WebSocket connected: ${sessionCode}`);
 
-  // Send the code to the frontend
   ws.send(JSON.stringify({ code: sessionCode }));
 
-  // Start bot
+  // Start WhatsApp bot
   startBotWithCode(sessionCode, (statusType, data) => {
     if (statusType === "qr") {
       ws.send(JSON.stringify({ qr: data }));
@@ -20,18 +38,13 @@ wss.on("connection", function connection(ws) {
     }
   });
 
-  // Optional: Handle disconnection
   ws.on("close", () => {
-    console.log(`🔌 User ${sessionCode} disconnected`);
+    console.log(`🔌 WebSocket disconnected: ${sessionCode}`);
   });
 });
 
-// Generate an 8-character alphanumeric code
-function generateSessionCode() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
+// Start server on the port Render gives
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
