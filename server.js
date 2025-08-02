@@ -1,5 +1,4 @@
 const WebSocket = require("ws");
-const { v4: uuidv4 } = require("uuid");
 const { startBotWithCode } = require("./whatsapp_bot");
 
 const wss = new WebSocket.Server({ port: process.env.PORT || 3000 });
