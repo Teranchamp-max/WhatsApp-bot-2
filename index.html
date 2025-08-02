@@ -1,19 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BWMXMD WhatsApp Connector</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>BWMXMD WhatsApp Bot Dashboard</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: #161b22;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+    }
+
+    h1 {
+      color: #58a6ff;
+      text-align: center;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
+
+    input, textarea {
+      background: #0d1117;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+    }
+
+    button {
+      background-color: #238636;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #session-code {
+      font-size: 28px;
+      color: #39ff14;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 10px;
+      color: #ffa500;
+    }
+
+    #progress {
+      text-align: center;
+      margin-top: 20px;
+      color: #00bfff;
+    }
+  </style>
 </head>
 <body>
+
   <div class="container">
-    <h1>BWMXMD WhatsApp Connector</h1>
-    <p class="code-label">Your Login Code:</p>
-    <div class="code-box" id="code">LOADING...</div>
-    <div id="qr-container"></div>
-    <p class="status" id="status">Connecting to server...</p>
+    <h1>📤 BWMXMD WhatsApp Bot</h1>
+
+    <div id="session-code">Connecting...</div>
+    <div id="status">Waiting for bot...</div>
+
+    <input type="text" id="group" placeholder="Enter WhatsApp Group Name" />
+    <textarea id="msg1" rows="2" placeholder="Message Option 1"></textarea>
+    <textarea id="msg2" rows="2" placeholder="Message Option 2"></textarea>
+    <textarea id="msg3" rows="2" placeholder="Message Option 3"></textarea>
+
+    <button onclick="startBot()">Start Bot</button>
+
+    <div id="progress">No activity yet.</div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    const socket = io("https://whatsapp-bot-2-we2a.onrender.com");
+    let sessionCode = "";
+
+    // When socket connects, ask for a session code
+    socket.on("connect", () => {
+      socket.emit("generate-session-code");
+    });
+
+    // When we receive a code
+    socket.on("session-code", (code) => {
+      sessionCode = code;
+      document.getElementById("session-code").textContent = "BOT CODE: " + code;
+    });
+
+    // When the backend confirms bot is linked
+    socket.on("bot-linked", (message) => {
+      document.getElementById("status").textContent = message;
+      document.getElementById("status").style.color = "lightgreen";
+    });
+
+    // When progress updates come in
+    socket.on("bot-progress", (update) => {
+      document.getElementById("progress").textContent = update;
+    });
+
+    function startBot() {
+      const group = document.getElementById("group").value.trim();
+      const msg1 = document.getElementById("msg1").value.trim();
+      const msg2 = document.getElementById("msg2").value.trim();
+      const msg3 = document.getElementById("msg3").value.trim();
+
+      if (!group || !msg1 || !msg2 || !msg3) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      socket.emit("start-bot", {
+        code: sessionCode,
+        groupName: group,
+        messages: [msg1, msg2, msg3]
+      });
+
+      document.getElementById("progress").textContent = "🔄 Bot is starting...";
+    }
+  </script>
+
 </body>
 </html>
